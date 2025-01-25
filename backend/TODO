@@ -1,0 +1,10 @@
+---create courses and teacher works   (teacher_id > 0) 
+---all of student is working 
+
+# check the rest
+@ make so that you are either teacher or student at signup
+& add the stipulation that course creation ,  update  can only be done by teacher type user or admin
+
+
+
+seperate the courses bullshit onto another folder

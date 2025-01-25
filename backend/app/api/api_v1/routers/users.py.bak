@@ -1,0 +1,147 @@
+from fastapi import APIRouter, Request, Depends, Response, encoders
+from typing import List , schemas
+
+from app.db.session import get_db
+from app.db.crud import *
+from app.db.schemas import * 
+from app.core.auth import get_current_active_user, get_current_active_superuser
+
+users_router = r = APIRouter()
+
+
+@app.post("/users/", response_model=schemas.UserInDB)
+async def user_create(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    return create_user(user, db)
+@r.get(
+    "/users",
+    response_model=t.List[User],
+    response_model_exclude_none=True,
+)
+async def users_list(
+    response: Response,
+    db=Depends(get_db),
+    current_user=Depends(get_current_active_superuser),
+):
+    """
+    Get all users
+    """
+    users = get_users(db)
+    # This is necessary for react-admin to work
+    response.headers["Content-Range"] = f"0-9/{len(users)}"
+    return users
+
+
+@r.get("/users/me", response_model=User, response_model_exclude_none=True)
+async def user_me(current_user=Depends(get_current_active_user)):
+    """
+    Get own user
+    """
+    return current_user
+
+
+@r.get(
+    "/users/{user_id}",
+    response_model=User,
+    response_model_exclude_none=True,
+)
+async def user_details(
+    request: Request,
+    user_id: int,
+    db=Depends(get_db),
+    current_user=Depends(get_current_active_superuser),
+):
+    """
+    Get any user details
+    """
+    user = get_user(db, user_id)
+    return user
+    # return encoders.jsonable_encoder(
+    #     user, skip_defaults=True, exclude_none=True,
+    # )
+
+
+@r.post("/users", response_model=User, response_model_exclude_none=True)
+async def user_create(
+    request: Request,
+    user: UserCreate,
+    db=Depends(get_db),
+    current_user=Depends(get_current_active_superuser),
+):
+    """
+    Create a new user
+    """
+    return create_user(db, user)
+
+
+@r.put(
+    "/users/{user_id}", response_model=User, response_model_exclude_none=True
+)
+async def user_edit(
+    request: Request,
+    user_id: int,
+    user: UserEdit,
+    db=Depends(get_db),
+    current_user=Depends(get_current_active_superuser),
+):
+    """
+    Update existing user
+    """
+    return edit_user(db, user_id, user)
+
+
+@r.delete(
+    "/users/{user_id}", response_model=User, response_model_exclude_none=True
+)
+async def user_delete(
+    request: Request,
+    user_id: int,
+    db=Depends(get_db),
+    current_user=Depends(get_current_active_superuser),
+):
+    """
+    Delete existing user
+    """
+    return delete_user(db, user_id)
+
+@r.get("/courses/", response_model=t.List[Course])
+async def courses_get(db = Depends(get_db)):
+    courses = get_courses(db)
+    return courses
+@r.get("/courses/{course_id}", response_model=Course)
+async def course_get(course_id: int, db = Depends(get_db)):
+    return get_course(course_id,db) 
+
+# add the condition that user must be teacher
+@r.post("/courses/", response_model=Course)
+async def course_create(course: CourseCreate, db = Depends(get_db)):
+    return create_course(course , db)
+
+@r.delete("/courses/{course_id}", response_model=Course)
+async def course_delete(course_id: int, db= Depends(get_db)):
+    return delete_course
+
+@r.put("/courses/{course_id}", response_model=Course)
+async def course_update(course_id: int, course: CourseCreate, db = Depends(get_db)):
+    return update_course
+
+@r.post("/teachers/", response_model=User)
+async def teacher_create (Teacher: UserCreate, db = Depends(get_db)):
+    return create_teacher(db,Teacher)
+@r.get("/teachers/{teacher_id}", response_model=User)
+async def teacher_get(teacher_id: int, db = Depends(get_db)):
+    return get_teacher(teacher_id, db)
+@r.post("/courses/", response_model=Course)
+async def course_create(course: CourseCreate, db  = Depends(get_db)):
+    return create_course(course, db)
+@r.get("/courses/{course_id}", response_model=Course)
+async def course_get(course_id: int, db: Session = Depends(get_db)):
+    return get_course(course_id, db)
+@r.post("/students/", response_model=User)
+async def student_create(student: StudentCreate, db = Depends(get_db)):
+    return create_student(student, db)
+@r.get("/students/{student_id}", response_model=User)
+async def student_get(student_id: int, db = Depends(get_db)):
+    return get_student(student_id, db)
+@r.get("/students/", response_model=List[User])
+async def students_get(db = Depends(get_db)):
+    return get_students(db)

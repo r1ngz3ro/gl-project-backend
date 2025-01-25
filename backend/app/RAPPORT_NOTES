@@ -1,0 +1,75 @@
+
+## OG DATABASE ### 
+CREATE TABLE "user" (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR UNIQUE NOT NULL,
+    first_name VARCHAR,
+    last_name VARCHAR,
+    hashed_password VARCHAR NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_superuser BOOLEAN DEFAULT FALSE,
+    role VARCHAR NOT NULL
+);
+
+CREATE TABLE teachers (
+    id INTEGER PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
+    subject VARCHAR
+);
+
+CREATE TABLE students (
+    id INTEGER PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE
+);
+
+CREATE TABLE courses (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR,
+    teacher_id INTEGER REFERENCES teachers(id) ON DELETE SET NULL,
+    date DATE NOT NULL
+);
+
+CREATE TABLE course_student (
+    course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+    student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+    grade VARCHAR,
+    PRIMARY KEY (course_id, student_id)
+);
+
+####### after normalisation
+-- Base user table with common attributes
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR UNIQUE NOT NULL,
+    first_name VARCHAR,
+    last_name VARCHAR,
+    hashed_password VARCHAR NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_superuser BOOLEAN DEFAULT FALSE,
+    user_type VARCHAR NOT NULL CHECK (user_type IN ('student', 'teacher'))
+);
+
+-- Specialized teacher table
+CREATE TABLE teachers (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    subject VARCHAR
+);
+
+-- Specialized student table
+CREATE TABLE students (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Courses table
+CREATE TABLE courses (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    teacher_id INTEGER REFERENCES teachers(user_id) ON DELETE SET NULL,
+    date DATE NOT NULL
+);
+
+-- Course enrollments with grades
+CREATE TABLE course_enrollments (
+    course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+    student_id INTEGER REFERENCES students(user_id) ON DELETE CASCADE,
+    grade VARCHAR,
+    PRIMARY KEY (course_id, student_id)
+);
