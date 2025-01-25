@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr,ConfigDict
 from typing import Optional, List
 import typing as t
 from datetime import date ,datetime
@@ -50,13 +50,13 @@ class SeanceBase(BaseModel):
 class CourseBase(BaseModel):
     name: str
     teacher_id: Optional[int] = None
-    start: datetime.datetime
-    end: datetime.datetime
+    start: datetime
+    end: datetime
     model_config = ConfigDict(from_attributes=True)
 
 class CourseCreate(CourseBase):
-    start: datetime.datetime = datetime.datetime.now()
-    end: datetime.datetime = datetime.datetime.now()
+    start: datetime = datetime.now()
+    end: datetime = datetime.now()
 
 class CourseInDB(CourseBase):
     id: int
