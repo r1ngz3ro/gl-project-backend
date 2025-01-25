@@ -16,7 +16,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: db_admin
-      POSTGRES_PASSWORD: fckyou
+      POSTGRES_PASSWORD: password
     ports:
       - '5432:5432'
     volumes:
@@ -34,7 +34,7 @@ services:
       - ./.docker/.ipython:/root/.ipython:cached
     environment:
       PYTHONPATH: .
-      DATABASE_URL: 'postgresql://db_admin:fckyou@postgres:5432/db_admin'
+      DATABASE_URL: 'postgresql://db_admin:password@postgres:5432/db_admin'
     depends_on:
       - "postgres"
 
