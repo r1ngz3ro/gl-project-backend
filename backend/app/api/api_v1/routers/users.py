@@ -58,7 +58,7 @@ def create_teacher(teacher: schemas.TeacherCreate, db: Session = Depends(get_db)
     return db_teacher
 
 # get courses by teacher
-@app.get("/teachers/{teacher_id}/courses", response_model=List[CourseInDB])
+@app.get("/teachers/{teacher_id}/courses", response_model=List[schemas.CourseInDB])
 def get_courses_by_teacher(teacher_id: int, db: Session = Depends(get_db)):
     teacher = db.query(User).filter(User.id == teacher_id, User.user_type == "teacher").first()
     if not teacher:
@@ -68,7 +68,7 @@ def get_courses_by_teacher(teacher_id: int, db: Session = Depends(get_db)):
     return courses
 
 # get studnets by teacher and course
-@app.get("/teachers/{teacher_id}/courses", response_model=List[CourseInDB])
+@app.get("/teachers/{teacher_id}/courses", response_model=List[schemas.CourseInDB])
 def get_courses_by_teacher(teacher_id: int, db: Session = Depends(get_db)):
     teacher = db.query(User).filter(User.id == teacher_id, User.user_type == "teacher").first()
     if not teacher:
@@ -78,7 +78,7 @@ def get_courses_by_teacher(teacher_id: int, db: Session = Depends(get_db)):
     return courses
 
 # get studnets by teacher and course
-@app.get("/teachers/{teacher_id}/courses/{course_id}/students", response_model=List[UserBase])
+@app.get("/teachers/{teacher_id}/courses/{course_id}/students", response_model=List[schemas.UserBase])
 def get_students_by_teacher_and_course(teacher_id: int, course_id: int, db: Session = Depends(get_db)):
     teacher = db.query(User).filter(User.id == teacher_id, User.user_type == "teacher").first()
     if not teacher:
@@ -98,7 +98,7 @@ def read_teachers(db: Session = Depends(get_db)):
     return teachers
 
 # Course CRUD
-@app.post("/teachers/{teacher_id}/courses", response_model=CourseInDB)
+@app.post("/teachers/{teacher_id}/courses", response_model=schemas.CourseInDB)
 def create_course_by_teacher(teacher_id: int, course: CourseCreate, db: Session = Depends(get_db)):
     teacher = db.query(User).filter(User.id == teacher_id, User.user_type == "teacher").first()
     if not teacher:
@@ -149,7 +149,7 @@ def enroll_student(
 
     enrollment = models.CourseEnrollment(
         course_id=course_id,
-        student_id=student_id
+        student_id=student_id,
         is_payed=False
     )
     db.add(enrollment)
@@ -172,7 +172,7 @@ async def set_is_payed(
     student_id: int,
     is_payed: bool = True,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user =  schemas.UserBase
 ):
     if current_user.user_type != "teacher":
         raise HTTPException(
@@ -202,7 +202,7 @@ async def set_is_payed(
 # seance CRUD
 
 # get seance by teacher 
-@app.get("/teachers/{teacher_id}/seances", response_model=List[SeanceBase])
+@app.get("/teachers/{teacher_id}/seances", response_model=List[schemas.SeanceBase])
 def get_seances_by_teacher(teacher_id: int, db: Session = Depends(get_db)):
     teacher = db.query(User).filter(User.id == teacher_id, User.user_type == "teacher").first()
     if not teacher:
@@ -212,7 +212,7 @@ def get_seances_by_teacher(teacher_id: int, db: Session = Depends(get_db)):
     return seances
 
 # get seance by student
-@app.get("/students/{student_id}/seances", response_model=List[SeanceBase])
+@app.get("/students/{student_id}/seances", response_model=List[schemas.SeanceBase])
 def get_seances_by_student(student_id: int, db: Session = Depends(get_db)):
     student = db.query(User).filter(User.id == student_id, User.user_type == "student").first()
     if not student:
@@ -221,7 +221,7 @@ def get_seances_by_student(student_id: int, db: Session = Depends(get_db)):
     seances = db.query(Seance).join(CourseEnrollment).filter(CourseEnrollment.student_id == student_id, CourseEnrollment.course_id == Seance.course_id).all()
     return seances
 
-@router.post("/teachers/{teacher_id}/courses/{course_id}/seances", response_model=SeanceBase)
+@router.post("/teachers/{teacher_id}/courses/{course_id}/seances", response_model=schemas.SeanceBase)
 def add_seance_by_teacher(teacher_id: int, course_id: int, seance: SeanceCreate, db: Session = Depends(get_db)):
     teacher = db.query(User).filter(User.id == teacher_id, User.user_type == "teacher").first()
     if not teacher:
@@ -237,11 +237,10 @@ def add_seance_by_teacher(teacher_id: int, course_id: int, seance: SeanceCreate,
     db.refresh(new_seance)
     return new_seance
 # files crud 
-@router.post("/courses/{course_id}/files", response_model=FileInDB)
+@router.post("/courses/{course_id}/files", response_model=schemas.FileInDB)
 def create_file(
     course_id: int,
-    file_data: FileCreate,
-    current_user: Teacher = Depends(get_current_user),
+    current_user: schemas.TeacherCreate,
     db: Session = Depends(get_db)
 ):
     # Verify course exists and current user is the teacher
@@ -266,7 +265,7 @@ def create_file(
 
     return new_file
 
-@router.get("/courses/{course_id}/files", response_model=List[FileInDB])
+@router.get("/courses/{course_id}/files", response_model=List[schemas.FileInDB])
 def get_files_by_course(
     course_id: int,
     db: Session = Depends(get_db)
