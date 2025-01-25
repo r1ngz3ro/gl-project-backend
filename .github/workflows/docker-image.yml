@@ -1,0 +1,28 @@
+push:
+    branches:
+      - main  # Trigger on commits to the main branch
+
+jobs:
+  create-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p 6969 -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Compress repository
+        run: |
+          tar --exclude='.*' -czf ldc-fantazy.tar.gz .
+      
+      - name: run cmds in server
+        run: |   
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p 6969 "cd  ~/TEST/backend ; 
+          sudo docker-compose build ;
+          sudo docker-compose run backend pytest  ;
+          sudo docker-compose run frontend test ; 
+          sudo docker-compose up "
