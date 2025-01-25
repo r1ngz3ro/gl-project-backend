@@ -251,7 +251,7 @@ def create_file(
     if course.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to add files to this course")
 
-    if link = upload_file_to_cloud(file_data.file, file_data.filename)
+    # if link = upload_file_to_cloud(file_data.file, file_data.filename)
 
     new_file = File(
         filename=file_data.filename,
