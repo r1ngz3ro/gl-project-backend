@@ -5,9 +5,10 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - 6666:80
+      - 6969:80
     depends_on:
       - backend
+      - frontend
 
 
   postgres:
@@ -15,9 +16,9 @@ services:
     restart: always
     environment:
       POSTGRES_USER: db_admin
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: fckyou
     ports:
-      - '5430:5430'
+      - '5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data:cached
 
@@ -33,9 +34,20 @@ services:
       - ./.docker/.ipython:/root/.ipython:cached
     environment:
       PYTHONPATH: .
-      DATABASE_URL: 'postgresql://db_admin:password@postgres:5430/db_admin'
+      DATABASE_URL: 'postgresql://db_admin:fckyou@postgres:5432/db_admin'
     depends_on:
       - "postgres"
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    stdin_open: true
+    volumes:
+      - './frontend:/app:cached'
+      - './frontend/node_modules:/app/node_modules:cached'
+    environment:
+      - NODE_ENV=development
 
 
 volumes:
